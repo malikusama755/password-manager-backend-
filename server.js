@@ -20,10 +20,7 @@ let collection; // Global variable for collection access
 // Connect to MongoDB
 async function startServer() {
   try {
-    const client = new MongoClient(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const client = new MongoClient(uri);
 
     await client.connect();
     console.log("✅ MongoDB connected");
