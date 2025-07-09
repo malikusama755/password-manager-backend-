@@ -15,21 +15,19 @@ const port = process.env.PORT || 3000;
 const app = express();
 app.use(bodyParser.json());
 
-// Allowed origins: your frontend on Vercel + localhost for local testing
+// Allowed origins (Vercel frontend + localhost)
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://password-manager-frontend-5c79aglxv.vercel.app" // Your deployed frontend domain here
+  "https://password-manager-frontend-5c79aglxv.vercel.app"
 ];
 
 // CORS middleware
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // allow REST clients like Postman
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = `CORS policy does not allow access from origin ${origin}`;
-      return callback(new Error(msg), false);
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
-    return callback(null, true);
+    return callback(new Error(`CORS policy does not allow access from origin: ${origin}`), false);
   }
 }));
 
@@ -45,9 +43,11 @@ async function startServer() {
     const db = client.db(dbname);
     collection = db.collection("passwords");
 
-    app.listen(port, () => {
-      console.log(`🚀 Server listening on port ${port}`);
+    // Only one app.listen
+    app.listen(port, "0.0.0.0", () => {
+      console.log(`🚀 Server is live on http://localhost:${port}`);
     });
+
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
     process.exit(1);
@@ -55,9 +55,6 @@ async function startServer() {
 }
 
 startServer();
-app.listen(port, "0.0.0.0", () => {
-  console.log(`🚀 Server is live on http://localhost:${port}`);
-});
 
 // Health check endpoint
 app.get("/health", (req, res) => {
