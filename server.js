@@ -55,6 +55,9 @@ async function startServer() {
 }
 
 startServer();
+app.listen(port, "0.0.0.0", () => {
+  console.log(`🚀 Server is live on http://localhost:${port}`);
+});
 
 // Health check endpoint
 app.get("/health", (req, res) => {
