@@ -1,3 +1,4 @@
+require("dns").setServers(["8.8.8.8"]);
 const express = require("express");
 const dotenv = require("dotenv");
 const { MongoClient, ObjectId } = require("mongodb");
@@ -8,7 +9,7 @@ const cors = require("cors");
 dotenv.config();
 
 const uri = process.env.MONGO_URI;
-const dbname = "password_manager";
+const dbname = "Passwordmanager";
 const port = process.env.PORT || 3000;
 
 const app = express();
