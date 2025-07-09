@@ -15,16 +15,16 @@ const port = process.env.PORT || 3000;
 const app = express();
 app.use(bodyParser.json());
 
-// Allow CORS from your frontend deployed on Vercel and localhost for testing
+// Allowed origins: your frontend on Vercel + localhost for local testing
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://password-manager-frontend.vercel.app" // Replace with your actual frontend domain if different
+  "https://password-manager-frontend-5c79aglxv.vercel.app" // Your deployed frontend domain here
 ];
 
-// Middleware for CORS
+// CORS middleware
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser requests like Postman
+    if (!origin) return callback(null, true); // allow REST clients like Postman
     if (allowedOrigins.indexOf(origin) === -1) {
       const msg = `CORS policy does not allow access from origin ${origin}`;
       return callback(new Error(msg), false);
