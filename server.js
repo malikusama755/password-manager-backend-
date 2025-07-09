@@ -14,39 +14,54 @@ const port = process.env.PORT || 3000;
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
 
-let collection; // Global variable for collection access
+// Allow CORS from your frontend deployed on Vercel and localhost for testing
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://password-manager-frontend.vercel.app" // Replace with your actual frontend domain if different
+];
 
-// Connect to MongoDB
+// Middleware for CORS
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true); // allow non-browser requests like Postman
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `CORS policy does not allow access from origin ${origin}`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
+
+let collection;
+
+// Connect to MongoDB and start server
 async function startServer() {
   try {
     const client = new MongoClient(uri);
-
     await client.connect();
     console.log("✅ MongoDB connected");
 
     const db = client.db(dbname);
     collection = db.collection("passwords");
 
-    // Start the server after DB connects
     app.listen(port, () => {
       console.log(`🚀 Server listening on port ${port}`);
     });
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
-    process.exit(1); // Stop the app if DB fails
+    process.exit(1);
   }
 }
 
 startServer();
 
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.send("✅ Backend is live!");
 });
 
-
-// GET all passwords
+// Get all passwords
 app.get("/", async (req, res) => {
   try {
     const passwords = await collection.find({}).toArray();
@@ -56,7 +71,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-// POST: Add new password
+// Add new password
 app.post("/", async (req, res) => {
   try {
     const passwordData = req.body;
@@ -67,7 +82,7 @@ app.post("/", async (req, res) => {
   }
 });
 
-// DELETE: Remove password by _id
+// Delete password by _id
 app.delete("/", async (req, res) => {
   const { _id } = req.body;
 
