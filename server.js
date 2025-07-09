@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 // Allowed origins (Vercel frontend + localhost)
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://password-manager-frontend-5c79aglxv.vercel.app"
+  "https://password-manager-frontend-ochre.vercel.app"
 ];
 
 // CORS middleware
