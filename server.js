@@ -41,6 +41,11 @@ async function startServer() {
 
 startServer();
 
+app.get("/health", (req, res) => {
+  res.send("✅ Backend is live!");
+});
+
+
 // GET all passwords
 app.get("/", async (req, res) => {
   try {
