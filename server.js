@@ -88,7 +88,7 @@ app.get("/health", (req, res) => {
 // ======= PASSWORD ROUTES (Protected) =======
 
 // Get passwords
-app.get("/", authenticateToken, async (req, res) => {
+app.get("/passwords", authenticateToken, async (req, res) => {
   try {
     const passwords = await passwordCollection.find({ userId: req.user.id }).toArray();
     res.json(passwords);
@@ -98,7 +98,7 @@ app.get("/", authenticateToken, async (req, res) => {
 });
 
 // Add new password
-app.post("/", authenticateToken, async (req, res) => {
+app.post("/passwords", authenticateToken, async (req, res) => {
   try {
     const passwordData = { ...req.body, userId: req.user.id };
     const result = await passwordCollection.insertOne(passwordData);
@@ -109,7 +109,7 @@ app.post("/", authenticateToken, async (req, res) => {
 });
 
 // Delete password
-app.delete("/", authenticateToken, async (req, res) => {
+app.delete("/passwords", authenticateToken, async (req, res) => {
   const { _id } = req.body;
 
   if (!_id) return res.status(400).json({ success: false, message: "Missing _id" });
