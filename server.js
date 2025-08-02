@@ -24,10 +24,13 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy does not allow access from origin: ${origin}`), false);
     }
-    return callback(new Error(`CORS policy does not allow access from origin: ${origin}`), false);
-  }
+  },
+  methods: ["GET", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 let usersCollection;
@@ -35,7 +38,10 @@ let passwordCollection;
 
 // JWT Middleware
 function authenticateToken(req, res, next) {
-  const token = req.headers.authorization?.split(" ")[1]; // Bearer <token>
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ success: false, message: "Access token missing" });
+
+  const token = authHeader.split(" ")[1]; // Bearer <token>
   if (!token) return res.status(401).json({ success: false, message: "Access token missing" });
 
   jwt.verify(token, JWT_SECRET, (err, user) => {

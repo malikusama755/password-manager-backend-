@@ -25,13 +25,14 @@ router.post("/signup", async (req, res) => {
 
     // Fetch the new user
     const user = await usersCollection.findOne({ email });
+
     // Generate token
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "2h" });
+    const token = jwt.sign({ id: user._id.toString(), email: user.email }, JWT_SECRET, { expiresIn: "2h" });
 
     res.status(201).json({
       success: true,
       token,
-      user: { id: user._id, email: user.email, name: user.name }
+      user: { id: user._id.toString(), email: user.email, name: user.name }
     });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
@@ -48,11 +49,12 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ success: false, message: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "2h" });
+    const token = jwt.sign({ id: user._id.toString(), email: user.email }, JWT_SECRET, { expiresIn: "2h" });
+
     res.json({
       success: true,
       token,
-      user: { id: user._id, email: user.email, name: user.name }
+      user: { id: user._id.toString(), email: user.email, name: user.name }
     });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
