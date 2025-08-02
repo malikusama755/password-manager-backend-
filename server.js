@@ -3,7 +3,6 @@ const dotenv = require("dotenv");
 const { MongoClient, ObjectId } = require("mongodb");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dns").setServers(["8.8.8.8"]);
 
@@ -46,6 +45,9 @@ function authenticateToken(req, res, next) {
   });
 }
 
+// Import and setup auth routes
+const { router: authRouter, setupAuthRoutes } = require("./authRoutes");
+
 async function startServer() {
   try {
     const client = new MongoClient(uri);
@@ -55,6 +57,10 @@ async function startServer() {
     const db = client.db(dbname);
     usersCollection = db.collection("users");
     passwordCollection = db.collection("passwords");
+
+    // Setup auth routes with the connected client
+    await setupAuthRoutes(client);
+    app.use("/auth", authRouter);
 
     app.listen(port, "0.0.0.0", () => {
       console.log(`🚀 Server is live on http://localhost:${port}`);
@@ -71,36 +77,6 @@ startServer();
 // Health Check
 app.get("/health", (req, res) => {
   res.send("✅ Backend is live!");
-});
-
-// ======= AUTH ROUTES =======
-
-// Register
-app.post("/auth/signup", async (req, res) => {
-  const { name, email, password } = req.body;
-
-  const existing = await usersCollection.findOne({ email });
-  if (existing) return res.status(400).json({ success: false, message: "Email already exists" });
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  await usersCollection.insertOne({ name, email, password: hashedPassword });
-
-  res.status(201).json({ success: true, message: "User created" });
-});
-
-// Login
-app.post("/auth/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await usersCollection.findOne({ email });
-  if (!user) return res.status(401).json({ success: false, message: "Invalid credentials" });
-
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.status(401).json({ success: false, message: "Invalid credentials" });
-
-  const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "2h" });
-
-  res.json({ success: true, token, user: { id: user._id, email: user.email, name: user.name } });
 });
 
 // ======= PASSWORD ROUTES (Protected) =======
