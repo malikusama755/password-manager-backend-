@@ -90,7 +90,7 @@ app.get("/health", (req, res) => {
 // Get passwords
 app.get("/passwords", authenticateToken, async (req, res) => {
   try {
-    const passwords = await passwordCollection.find({ userId: req.user.id }).toArray();
+    const passwords = await passwordCollection.find({ userId: new ObjectId(req.user.id) }).toArray();
     res.json(passwords);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -100,7 +100,7 @@ app.get("/passwords", authenticateToken, async (req, res) => {
 // Add new password
 app.post("/passwords", authenticateToken, async (req, res) => {
   try {
-    const passwordData = { ...req.body, userId: req.user.id };
+    const passwordData = { ...req.body, userId: new ObjectId(req.user.id) };
     const result = await passwordCollection.insertOne(passwordData);
     res.json({ success: true, result });
   } catch (err) {
@@ -115,7 +115,7 @@ app.delete("/passwords", authenticateToken, async (req, res) => {
   if (!_id) return res.status(400).json({ success: false, message: "Missing _id" });
 
   try {
-    const result = await passwordCollection.deleteOne({ _id: new ObjectId(_id), userId: req.user.id });
+    const result = await passwordCollection.deleteOne({ _id: new ObjectId(_id), userId: new ObjectId(req.user.id) });
 
     if (result.deletedCount === 1) {
       res.json({ success: true });
